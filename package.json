@@ -1,0 +1,13 @@
+{
+  "name": "mini-compete",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "start": "turbo run start"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}

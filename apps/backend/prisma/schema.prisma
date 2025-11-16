@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password      String
+  role          Role
+  registrations Registration[]
+  mailbox       MailBox[]
+  createdAt     DateTime        @default(now())
+  competitions  Competition[]   @relation("OrganizerRelation")
+}
+
+enum Role {
+  participant
+  organizer
+}
+
+model Competition {
+  id            Int              @id @default(autoincrement())
+  title         String
+  description   String
+  tags          String[]         @default([])
+  capacity      Int
+  regDeadline   DateTime
+  organizerId   Int
+  organizer     User             @relation("OrganizerRelation", fields: [organizerId], references: [id])
+  registrations Registration[]
+  createdAt     DateTime         @default(now())
+}
+
+model Registration {
+  id             Int                 @id @default(autoincrement())
+  userId         Int
+  competitionId  Int
+  createdAt      DateTime            @default(now())
+  status         RegistrationStatus  @default(confirmed)
+  idempotencyKey String?
+  user           User                @relation(fields: [userId], references: [id])
+  competition    Competition         @relation(fields: [competitionId], references: [id])
+}
+
+enum RegistrationStatus {
+  confirmed
+  cancelled
+  pending
+}
+
+model MailBox {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  to       String
+  subject  String
+  body     String
+  sentAt   DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model FailedJob {
+  id        Int      @id @default(autoincrement())
+  queueName String
+  payload   Json
+  attempts  Int
+  lastError String?
+  createdAt DateTime @default(now())
+}
